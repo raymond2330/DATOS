@@ -18,6 +18,16 @@ from django.contrib import admin
 from django.urls import path, include
 from api.views import UserCreateView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework.routers import DefaultRouter
+from api import views
+
+router = DefaultRouter()
+router.register(r'research-papers', views.ResearchPaperViewSet, basename='researchpaper')
+router.register(r'datasets', views.DatasetViewSet, basename='dataset')
+router.register(r'requests', views.RequestViewSet, basename='request')
+router.register(r'authors', views.AuthorViewSet, basename='author')
+router.register(r'categories', views.CategoryViewSet, basename='category')
+router.register(r'keywords', views.KeywordViewSet, basename='keyword')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,3 +36,6 @@ urlpatterns = [
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api-auth/", include("rest_framework.urls")),
 ]
+
+urlpatterns += router.urls
+
