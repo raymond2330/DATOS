@@ -29,59 +29,59 @@ class CreateUserSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'role', 'username', 'email', 'avatar', 'institution', 'bio', 'join_date', 'last_login']
+        fields = '__all__'
 
 class ResearchPaperSerializer(serializers.ModelSerializer):
     class Meta:
         model = ResearchPaper
-        fields = ['id', 'title', 'abstract', 'journal', 'publication_details', 'access_setting', 'file_url', 'preview_url', 'category', 'uploaded_by']
+        fields = '__all__'
 
 class DatasetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Dataset
-        fields = ['id', 'title', 'description', 'version', 'size', 'file_url', 'preview_url', 'access_setting', 'uploaded_by']
+        fields = '__all__'
 
 class RequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Request
-        fields = ['id', 'user', 'paper', 'dataset', 'purpose', 'reason_for_access', 'request_date', 'status']
+        fields = '__all__'
 
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Author
-        fields = ['id', 'name', 'affiliation']
+        fields = '__all__'
 
 class PaperAuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = PaperAuthor
-        fields = ['id', 'paper', 'author']
+        fields = '__all__'
 
 class DatasetAuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = DatasetAuthor
-        fields = ['id', 'dataset', 'author']
+        fields = '__all__'
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ['id', 'name']
+        fields = '__all__'
 
 class KeywordSerializer(serializers.ModelSerializer):
     class Meta:
         model = Keyword
-        fields = ['id', 'term']
+        fields = '__all__'
 
 class PaperKeywordSerializer(serializers.ModelSerializer):
     class Meta:
         model = PaperKeyword
-        fields = ['id', 'paper', 'keyword']
+        fields = '__all__'
 
 class DatasetKeywordSerializer(serializers.ModelSerializer):
     class Meta:
         model = DatasetKeyword
-        fields = ['id', 'dataset', 'keyword']
+        fields = '__all__'
 
 class PermissionChangeLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = PermissionChangeLog
-        fields = ['id', 'request', 'admin', 'action', 'timestamp']
+        fields = '__all__'

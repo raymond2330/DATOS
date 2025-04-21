@@ -100,7 +100,7 @@ class DatasetKeyword(models.Model):
     keyword = models.ForeignKey(Keyword, on_delete=models.CASCADE)
 
 class PermissionChangeLog(models.Model):
-    request = models.ForeignKey(Request, on_delete=models.CASCADE)
+    request = models.ForeignKey(Request, on_delete=models.CASCADE, null=True, blank=True)
     admin = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role': 'admin'})
     action = models.CharField(max_length=10, choices=[('approved', 'Approved'), ('rejected', 'Rejected')])
     timestamp = models.DateTimeField(auto_now_add=True)

@@ -1,8 +1,21 @@
 from django.shortcuts import render
 from rest_framework import generics, permissions
-from .serializers import CreateUserSerializer, UserSerializer, ResearchPaperSerializer, DatasetSerializer, RequestSerializer, AuthorSerializer, CategorySerializer, KeywordSerializer
+from .serializers import CreateUserSerializer, UserSerializer, ResearchPaperSerializer, DatasetSerializer, RequestSerializer, AuthorSerializer, CategorySerializer, KeywordSerializer, PermissionChangeLogSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from .models import ResearchPaper, Dataset, Request, Author, Category, Keyword, User
+from .models import ResearchPaper, Dataset, Request, Author, Category, Keyword, User, PermissionChangeLog
+from rest_framework.permissions import BasePermission, SAFE_METHODS
+
+class IsGuest(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.role == 'guest'
+
+class IsStudent(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.role == 'student'
+
+class IsAdminOrFaculty(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.role in ['admin', 'faculty']
 
 class UserCreateView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -20,12 +33,38 @@ class UserListView(generics.ListAPIView):
 class ResearchPaperListView(generics.ListAPIView):
     queryset = ResearchPaper.objects.all()
     serializer_class = ResearchPaperSerializer
-    permission_classes = [permissions.AllowAny]
+
+    def get_permissions(self):
+        if self.request.method in SAFE_METHODS:
+            return [permissions.AllowAny()]
+        return [IsAdminOrFaculty()]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_authenticated:
+            if user.role == 'student':
+                return self.queryset
+            elif user.role == 'guest':
+                return self.queryset.filter(access_setting='open')
+        return self.queryset.none()
 
 class DatasetListView(generics.ListAPIView):
     queryset = Dataset.objects.all()
     serializer_class = DatasetSerializer
-    permission_classes = [permissions.AllowAny]
+
+    def get_permissions(self):
+        if self.request.method in SAFE_METHODS:
+            return [permissions.AllowAny()]
+        return [IsAdminOrFaculty()]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_authenticated:
+            if user.role == 'student':
+                return self.queryset
+            elif user.role == 'guest':
+                return self.queryset.filter(access_setting='open')
+        return self.queryset.none()
 
 class RequestCreateView(generics.CreateAPIView):
     queryset = Request.objects.all()
@@ -46,3 +85,11 @@ class KeywordListView(generics.ListAPIView):
     queryset = Keyword.objects.all()
     serializer_class = KeywordSerializer
     permission_classes = [permissions.AllowAny]
+
+class PermissionChangeView(generics.UpdateAPIView):
+    queryset = PermissionChangeLog.objects.all()
+    serializer_class = PermissionChangeLogSerializer
+    permission_classes = [IsAdminOrFaculty]
+
+    def perform_update(self, serializer):
+        serializer.save(admin=self.request.user)
