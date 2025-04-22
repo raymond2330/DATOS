@@ -150,3 +150,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins for development purposes
 CORS_ALLOW_CREDENTIALS = True  # Allow credentials for development purposes
+
+AUTH_USER_MODEL = 'api.User'

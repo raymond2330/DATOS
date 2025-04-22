@@ -1,5 +1,9 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
+from .models import (
+    User, ResearchPaper, Dataset, Request, Author, PaperAuthor, DatasetAuthor,
+    Category, Keyword, PaperKeyword, DatasetKeyword, PermissionChangeLog
+)
 
 class CreateUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -21,3 +25,63 @@ class CreateUserSerializer(serializers.ModelSerializer):
         )
         # Optionally handle institution (e.g., save it to a related model or log it)
         return user
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = '__all__'
+
+class ResearchPaperSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ResearchPaper
+        fields = '__all__'
+
+class DatasetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Dataset
+        fields = '__all__'
+
+class RequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Request
+        fields = '__all__'
+
+class AuthorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Author
+        fields = '__all__'
+
+class PaperAuthorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PaperAuthor
+        fields = '__all__'
+
+class DatasetAuthorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DatasetAuthor
+        fields = '__all__'
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = '__all__'
+
+class KeywordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Keyword
+        fields = '__all__'
+
+class PaperKeywordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PaperKeyword
+        fields = '__all__'
+
+class DatasetKeywordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DatasetKeyword
+        fields = '__all__'
+
+class PermissionChangeLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PermissionChangeLog
+        fields = '__all__'
