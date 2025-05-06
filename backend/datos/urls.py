@@ -22,10 +22,12 @@ from api.views import (
     UserListView, ResearchPaperListView, DatasetListView, RequestCreateView,
     AuthorListView, CategoryListView, KeywordListView
 )
+from .views import home_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("api/user/create/", UserCreateView.as_view(), name="user-create"),
+    # path('', home_view, name='home'),
+    # path("api/user/create/", UserCreateView.as_view(), name="user-create"),
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api-auth/", include("rest_framework.urls")),
@@ -36,4 +38,6 @@ urlpatterns = [
     path("api/authors/", AuthorListView.as_view(), name="author-list"),
     path("api/categories/", CategoryListView.as_view(), name="category-list"),
     path("api/keywords/", KeywordListView.as_view(), name="keyword-list"),
+    path('api/', include('api.urls')),
+    
 ]

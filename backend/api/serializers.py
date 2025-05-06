@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from rest_framework import serializers
 from .models import (
     User, ResearchPaper, Dataset, Request, Author, PaperAuthor, DatasetAuthor,
@@ -11,19 +10,21 @@ class CreateUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email', 'password', 'first_name', 'last_name', 'institution']
+        fields = ['email', 'password', 'first_name', 'last_name', 'institution', 'role']
 
     def create(self, validated_data):
-        # Hash the password and create the user
+        # Use email as the username to ensure uniqueness
+        validated_data['username'] = validated_data['email']
         institution = validated_data.pop('institution', '')  # Extract institution if provided
+        role = validated_data.pop('role', 'guest')  # Default to 'guest' if role is not provided
         user = User.objects.create_user(
-            username=validated_data['email'],  # Use email as the username
+            username=validated_data['username'],
             password=validated_data['password'],
             email=validated_data['email'],
             first_name=validated_data.get('first_name', ''),
-            last_name=validated_data.get('last_name', '')
+            last_name=validated_data.get('last_name', ''),
+            role=role
         )
-        # Optionally handle institution (e.g., save it to a related model or log it)
         return user
 
 class UserSerializer(serializers.ModelSerializer):

@@ -4,6 +4,7 @@ from .serializers import CreateUserSerializer, UserSerializer, ResearchPaperSeri
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .models import ResearchPaper, Dataset, Request, Author, Category, Keyword, User, PermissionChangeLog
 from rest_framework.permissions import BasePermission, SAFE_METHODS
+from django.contrib.auth.views import LoginView
 
 class IsGuest(BasePermission):
     def has_permission(self, request, view):
@@ -25,6 +26,30 @@ class UserCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         serializer.save(password=serializer.validated_data['password'])
 
+class StudentCreateView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = CreateUserSerializer
+    permission_classes = [AllowAny]
+
+    def perform_create(self, serializer):
+        serializer.save(role='student', password=serializer.validated_data['password'])
+
+class GuestCreateView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = CreateUserSerializer
+    permission_classes = [AllowAny]
+
+    def perform_create(self, serializer):
+        serializer.save(role='guest', password=serializer.validated_data['password'])
+
+class AdminCreateView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = CreateUserSerializer
+    permission_classes = [AllowAny]
+
+    def perform_create(self, serializer):
+        serializer.save(role='admin', password=serializer.validated_data['password'])
+
 class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -41,16 +66,29 @@ class ResearchPaperListView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated:
-            if user.role == 'student':
-                return self.queryset
-            elif user.role == 'guest':
-                return self.queryset.filter(access_setting='open')
-        return self.queryset.none()
+        queryset = self.queryset.all()  # Use .all() to avoid RuntimeError
+        if not user.is_authenticated:
+            print("Unauthenticated user. Returning empty queryset.")
+            return queryset.none()
+        print("User Role:", user.role)
+        print("Queryset Before Filtering:", queryset)
+        if user.role == 'admin':
+            print("Returning all research papers for admin.")
+            return queryset
+        if user.role == 'student':
+            print("Returning all research papers for student.")
+            return queryset
+        elif user.role == 'guest':
+            filtered_queryset = queryset.filter(access_setting='open')
+            print("Returning open research papers for guest:", filtered_queryset)
+            return filtered_queryset
+        print("Returning empty queryset for unauthenticated user.")
+        return queryset.none()
 
 class DatasetListView(generics.ListAPIView):
     queryset = Dataset.objects.all()
     serializer_class = DatasetSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_permissions(self):
         if self.request.method in SAFE_METHODS:
@@ -59,12 +97,13 @@ class DatasetListView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
+        queryset = self.queryset.all()  # Use .all() to avoid RuntimeError
         if user.is_authenticated:
             if user.role == 'student':
-                return self.queryset
+                return queryset
             elif user.role == 'guest':
-                return self.queryset.filter(access_setting='open')
-        return self.queryset.none()
+                return queryset.filter(access_setting='open')
+        return queryset.none()
 
 class RequestCreateView(generics.CreateAPIView):
     queryset = Request.objects.all()
@@ -93,3 +132,7 @@ class PermissionChangeView(generics.UpdateAPIView):
 
     def perform_update(self, serializer):
         serializer.save(admin=self.request.user)
+
+# class CustomLoginView(LoginView):
+#     template_name = 'registration/login.html'
+#     redirect_authenticated_user = True
