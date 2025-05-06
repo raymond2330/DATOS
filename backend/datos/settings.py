@@ -62,6 +62,8 @@ INSTALLED_APPS = [
     'corsheaders',
 ]
 
+INSTALLED_APPS += ['django_extensions']
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -152,3 +154,6 @@ CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins for development purposes
 CORS_ALLOW_CREDENTIALS = True  # Allow credentials for development purposes
 
 AUTH_USER_MODEL = 'api.User'
+
+# Redirect authenticated users after login
+# LOGIN_REDIRECT_URL = '/'
