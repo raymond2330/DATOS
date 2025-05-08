@@ -36,14 +36,16 @@ class ResearchPaper(models.Model):
         ('restricted', 'Restricted'),
     ]
     title = models.CharField(max_length=255)
-    abstract = models.TextField()
+    description = models.TextField(blank=True, null=True)
     journal = models.CharField(max_length=255)
-    publication_details = models.TextField()
+    publication_date = models.DateField(null=True, blank=True)
+    authors = models.ManyToManyField("Author", through="PaperAuthor")
+    keywords = models.ManyToManyField("Keyword", through="PaperKeyword")
     access_setting = models.CharField(max_length=10, choices=ACCESS_CHOICES)
     file_url = models.URLField()
-    preview_url = models.URLField()
     category = models.ForeignKey('Category', on_delete=models.CASCADE)
     uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    file_id = models.CharField(max_length=255, blank=True, null=True)
 
 class Dataset(models.Model):
     ACCESS_CHOICES = [
@@ -55,7 +57,7 @@ class Dataset(models.Model):
     version = models.CharField(max_length=50)
     size = models.DecimalField(max_digits=10, decimal_places=2)
     file_url = models.URLField()
-    preview_url = models.URLField()
+    # preview_url = models.URLField()
     access_setting = models.CharField(max_length=10, choices=ACCESS_CHOICES)
     uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
 

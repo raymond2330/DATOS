@@ -53,9 +53,20 @@ coverage.xml
 *.cover
 .hypothesis/
 
+# Django migrations
+*/migrations/
+
 # MyPy
 .mypy_cache/
 .dmypy.json
 
 # Pytest
 .pytest_cache/
+
+# JSON files
+*.json
+
+# Added token.pickle to ignore for Google API credentials
+token.pickle
+
+*.pdf
