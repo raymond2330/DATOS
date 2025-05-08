@@ -22,7 +22,7 @@ class Command(BaseCommand):
         users = [
             User.objects.create_user(
                 username=fake.user_name(),
-                password='password123',
+                password='12345678',
                 role=role
             ) for role in roles
         ]
@@ -37,7 +37,7 @@ class Command(BaseCommand):
         for _ in range(10):
             paper = ResearchPaper.objects.create(
                 title=fake.sentence(),
-                abstract=fake.text(),
+                description=fake.text(),
                 journal=fake.company(),
                 publication_details=fake.text(),
                 access_setting='open',

@@ -6,10 +6,12 @@ from .models import ResearchPaper, Dataset, Request, Author, Category, Keyword, 
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 from django.contrib.auth.views import LoginView
 from django.http import JsonResponse
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from .utils import upload_to_google_drive
 import os
 
+
+# set permissions for different user roles
 class IsGuest(BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.role == 'guest'
@@ -18,9 +20,9 @@ class IsStudent(BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.role == 'student'
 
-class IsAdminOrFaculty(BasePermission):
+class IsAdmin(BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role in ['admin', 'faculty']
+        return request.user.is_authenticated and request.user.role in ['admin']
 
 class UserCreateView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -66,7 +68,7 @@ class ResearchPaperListView(generics.ListAPIView):
     def get_permissions(self):
         if self.request.method in SAFE_METHODS:
             return [permissions.AllowAny()]
-        return [IsAdminOrFaculty()]
+        return [IsAdmin()]
 
     def get_queryset(self):
         user = self.request.user
@@ -97,7 +99,7 @@ class DatasetListView(generics.ListAPIView):
     def get_permissions(self):
         if self.request.method in SAFE_METHODS:
             return [permissions.AllowAny()]
-        return [IsAdminOrFaculty()]
+        return [IsAdmin()]
 
     def get_queryset(self):
         user = self.request.user
@@ -132,14 +134,18 @@ class KeywordListView(generics.ListAPIView):
 class PermissionChangeView(generics.UpdateAPIView):
     queryset = PermissionChangeLog.objects.all()
     serializer_class = PermissionChangeLogSerializer
-    permission_classes = [IsAdminOrFaculty]
+    permission_classes = [IsAdmin]
 
     def perform_update(self, serializer):
         serializer.save(admin=self.request.user)
 
-from .models import ResearchPaper, Dataset
+# Decorator to check if the user is an admin
+def admin_required(view_func):
+    decorated_view_func = user_passes_test(lambda u: u.is_superuser)(view_func)
+    return decorated_view_func
 
 @api_view(['POST'])
+@permission_classes([IsAdmin])
 def upload_file_to_drive(request):
     file_type = request.data.get('file_type')  # Expecting 'dataset' or 'research_paper'
     title = request.data.get('title')

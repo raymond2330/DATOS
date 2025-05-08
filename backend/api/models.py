@@ -36,7 +36,7 @@ class ResearchPaper(models.Model):
         ('restricted', 'Restricted'),
     ]
     title = models.CharField(max_length=255)
-    abstract = models.TextField()
+    description = models.TextField(blank=True, null=True)
     journal = models.CharField(max_length=255)
     publication_details = models.TextField()
     access_setting = models.CharField(max_length=10, choices=ACCESS_CHOICES)
@@ -44,7 +44,6 @@ class ResearchPaper(models.Model):
     preview_url = models.URLField()
     category = models.ForeignKey('Category', on_delete=models.CASCADE)
     uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    description = models.TextField(blank=True, null=True)
     file_id = models.CharField(max_length=255, blank=True, null=True)
 
 class Dataset(models.Model):
