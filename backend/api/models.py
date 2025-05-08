@@ -44,6 +44,8 @@ class ResearchPaper(models.Model):
     preview_url = models.URLField()
     category = models.ForeignKey('Category', on_delete=models.CASCADE)
     uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    description = models.TextField(blank=True, null=True)
+    file_id = models.CharField(max_length=255, blank=True, null=True)
 
 class Dataset(models.Model):
     ACCESS_CHOICES = [

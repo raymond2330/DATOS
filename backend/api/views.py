@@ -5,6 +5,10 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from .models import ResearchPaper, Dataset, Request, Author, Category, Keyword, User, PermissionChangeLog
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 from django.contrib.auth.views import LoginView
+from django.http import JsonResponse
+from rest_framework.decorators import api_view
+from .utils import upload_to_google_drive
+import os
 
 class IsGuest(BasePermission):
     def has_permission(self, request, view):
@@ -132,6 +136,73 @@ class PermissionChangeView(generics.UpdateAPIView):
 
     def perform_update(self, serializer):
         serializer.save(admin=self.request.user)
+
+from .models import ResearchPaper, Dataset
+
+@api_view(['POST'])
+def upload_file_to_drive(request):
+    file_type = request.data.get('file_type')  # Expecting 'dataset' or 'research_paper'
+    title = request.data.get('title')
+    description = request.data.get('description')
+    category_id = request.data.get('category_id')
+
+    if not file_type or file_type not in ['dataset', 'research_paper']:
+        return JsonResponse({'error': 'Invalid or missing file_type. Must be "dataset" or "research_paper".'}, status=400)
+
+    if not title:
+        return JsonResponse({'error': 'Title is required.'}, status=400)
+
+    if 'file' not in request.FILES:
+        return JsonResponse({'error': 'No file provided'}, status=400)
+
+    uploaded_file = request.FILES['file']
+    file_path = os.path.join('temp', uploaded_file.name)
+
+    # Save the file temporarily
+    os.makedirs('temp', exist_ok=True)
+    with open(file_path, 'wb') as temp_file:
+        for chunk in uploaded_file.chunks():
+            temp_file.write(chunk)
+
+    try:
+        # Define folder IDs for Research Papers and Datasets
+        research_paper_folder_id = '1jrLtAfhsTnTo9ePASvUxj05BlWQplZBo'  # Replace with the actual folder ID
+        dataset_folder_id = '1xlr1MfA4wsj8ReudK-s9-mm7S7e2EfD7'  # Replace with the actual folder ID
+
+        # Determine the target folder based on file type
+        if file_type == 'research_paper':
+            folder_id = research_paper_folder_id
+        elif file_type == 'dataset':
+            folder_id = dataset_folder_id
+
+        # Upload to the appropriate folder in Google Drive
+        file_metadata = {
+            'name': uploaded_file.name,
+            'parents': [folder_id]
+        }
+        file_id = upload_to_google_drive(file_path, uploaded_file.name, file_metadata)
+
+        # Get or create a default category if category_id is not provided
+        if not category_id:
+            category, _ = Category.objects.get_or_create(name='Default')
+        else:
+            try:
+                category = Category.objects.get(id=category_id)
+            except Category.DoesNotExist:
+                return JsonResponse({'error': 'Invalid category_id provided.'}, status=400)
+
+        # Save metadata to the database
+        if file_type == 'dataset':
+            Dataset.objects.create(title=title, description=description, file_id=file_id, uploaded_by=request.user)
+        elif file_type == 'research_paper':
+            ResearchPaper.objects.create(title=title, description=description, file_id=file_id, category=category, uploaded_by=request.user)
+
+        return JsonResponse({'message': 'File uploaded successfully', 'file_id': file_id})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+    finally:
+        # Clean up the temporary file
+        os.remove(file_path)
 
 # class CustomLoginView(LoginView):
 #     template_name = 'registration/login.html'

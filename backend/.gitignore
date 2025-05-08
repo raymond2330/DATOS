@@ -59,3 +59,9 @@ coverage.xml
 
 # Pytest
 .pytest_cache/
+
+# JSON files
+*.json
+
+# Added token.pickle to ignore for Google API credentials
+token.pickle
