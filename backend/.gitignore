@@ -68,3 +68,5 @@ coverage.xml
 
 # Added token.pickle to ignore for Google API credentials
 token.pickle
+
+*.pdf
