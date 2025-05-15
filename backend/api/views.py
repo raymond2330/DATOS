@@ -229,6 +229,18 @@ def view_paper(request, file_id):
         print(f"view_paper: User role is {user_role}")
 
         if user_role == 'guest':
+            # Check if the guest user has an approved request for the paper
+            approved_request = Request.objects.filter(user=request.user, paper=paper, status='approved').exists()
+            if approved_request:
+                print("view_paper: Approved request found for guest user.")
+                # Redirect to Google Drive view URL for approved requests
+                view_url = paper.get_google_drive_view_url()
+                if not view_url:
+                    print("view_paper: Google Drive view URL is None.")
+                    return JsonResponse({"error": "Google Drive view URL not found."}, status=404)
+                return redirect(view_url)
+
+            # If not approved, show the first 3 pages as a preview
             print("view_paper: Guest user detected. Attempting to download file.")
             file_content = download_from_google_drive(file_id)
             if not file_content:

@@ -97,7 +97,7 @@ def test_view_paper():
     except Exception as e:
         print("An error occurred:", str(e))
 
-# test_view_paper()
+test_view_paper()
 
 def test_request_access():
     print("Starting test_request_access...")
@@ -119,7 +119,7 @@ def test_request_access():
             request_access_url = f"{BASE_URL}/api/request-access/"
 
             request_data = {
-                "paper_id": 1,  # Replace with a valid paper ID
+                "paper_id": 32,  # Replace with a valid paper ID
                 "purpose": "Research purposes",
                 "reason_for_access": "I need this paper for my thesis."
             }
@@ -140,6 +140,6 @@ def test_request_access():
     except Exception as e:
         print("An error occurred:", str(e))
 
-test_request_access()
+# test_request_access()
 
 
