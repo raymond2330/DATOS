@@ -11,7 +11,7 @@ BASE_URL = "http://localhost:8000"
 
 # User credentials
 login_data = {
-    "username": "admin@gmail.com",  # Use your registered email here
+    "username": "guest@gmail.com",  # Use your registered email here
     "password": "12345678" # Use your registered password here
 }
 
@@ -84,22 +84,17 @@ def test_view_paper():
 
             if response.status_code == 302:
                 print("Redirected to:", response.headers.get("Location"))
-                print(1)
             elif response.status_code == 200:
-                print("Preview rendered successfully.")
-                print(2)
-                print(response.text)  # Print the HTML content for debugging
+                print("Rendered successfully.")
+                # print(response.text)  # Print the HTML content for debugging
             else:
                 print("Error during view paper. Status code:", response.status_code)
-                print(3)
                 print("Response:", response.text)
         else:
             print("Login failed:", response.status_code)
-            print(4)
             print(response.text)
 
     except Exception as e:
-        print(5)
         print("An error occurred:", str(e))
 
 test_view_paper()

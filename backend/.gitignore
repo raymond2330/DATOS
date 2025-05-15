@@ -70,3 +70,4 @@ coverage.xml
 token.pickle
 
 *.pdf
+temp/

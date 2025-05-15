@@ -11,7 +11,7 @@ from .utils import upload_to_google_drive
 import os
 from django.http import HttpResponse
 from .utils import download_from_google_drive
-from pdf2image import convert_from_path
+from fitz import open as fitz_open
 from django.template.loader import render_to_string
 
 
@@ -214,6 +214,7 @@ def upload_file_to_drive(request):
         # Clean up the temporary file
         os.remove(file_path)
 
+# TODO: Optimize the view_paper function by applying cache
 @api_view(['GET'])
 @permission_classes([IsStudent | IsAdmin | IsGuest])
 def view_paper(request, file_id):
@@ -241,14 +242,18 @@ def view_paper(request, file_id):
                 temp_file.write(file_content)
 
             try:
-                print("view_paper: Converting PDF to images.")
-                images = convert_from_path(temp_pdf_path, first_page=1, last_page=3)
+                print("view_paper: Converting PDF to images using PyMuPDF.")
+                pdf_document = fitz_open(temp_pdf_path)
                 image_urls = []
 
-                for i, image in enumerate(images):
-                    image_path = os.path.join('temp', f"{paper.title}_page_{i + 1}.png")
-                    image.save(image_path, 'PNG')
+                for page_number in range(1, min(4, len(pdf_document) + 1)):
+                    page = pdf_document[page_number - 1]
+                    pix = page.get_pixmap()
+                    image_path = os.path.join('temp', f"{paper.title}_page_{page_number}.png")
+                    pix.save(image_path)
                     image_urls.append(image_path)
+
+                pdf_document.close()
 
                 print("view_paper: Rendering preview HTML.")
                 html_content = render_to_string('preview.html', {'images': image_urls})
@@ -256,6 +261,8 @@ def view_paper(request, file_id):
             finally:
                 print("view_paper: Cleaning up temporary files.")
                 os.remove(temp_pdf_path)
+                for image_path in image_urls:
+                    os.remove(image_path)
 
         elif user_role in ['student', 'admin']:
             print("view_paper: Redirecting student/admin to Google Drive view URL.")

@@ -5,6 +5,7 @@ from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
+from googleapiclient.errors import HttpError
 import pickle
 import io
 
@@ -55,7 +56,9 @@ def download_from_google_drive(file_id):
         if not os.path.exists(token_path):
             raise FileNotFoundError("token.pickle file not found. Please authenticate again.")
 
-        creds = Credentials.from_authorized_user_file(token_path)
+        with open(token_path, 'rb') as token:
+            creds = pickle.load(token)
+
         service = build('drive', 'v3', credentials=creds)
 
         # Request the file from Google Drive
