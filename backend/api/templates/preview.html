@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview</title>
+</head>
+<body>
+    <h1>Preview of the First 3 Pages</h1>
+    {% for image in images %}
+        <div>
+            <img src="{{ image }}" alt="Page {{ forloop.counter }}" style="width:100%; max-width:800px;">
+        </div>
+    {% endfor %}
+</body>
+</html>

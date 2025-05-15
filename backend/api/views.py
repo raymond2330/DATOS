@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
 from rest_framework import generics, permissions
 from .serializers import CreateUserSerializer, UserSerializer, ResearchPaperSerializer, DatasetSerializer, RequestSerializer, AuthorSerializer, CategorySerializer, KeywordSerializer, PermissionChangeLogSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -9,6 +9,10 @@ from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
 from .utils import upload_to_google_drive
 import os
+from django.http import HttpResponse
+from .utils import download_from_google_drive
+from fitz import open as fitz_open
+from django.template.loader import render_to_string
 
 
 # set permissions for different user roles
@@ -209,6 +213,84 @@ def upload_file_to_drive(request):
     finally:
         # Clean up the temporary file
         os.remove(file_path)
+
+# TODO: Optimize the view_paper function by applying cache
+@api_view(['GET'])
+@permission_classes([IsStudent | IsAdmin | IsGuest])
+def view_paper(request, file_id):
+    print("view_paper: Start")
+    try:
+        # Fetch the research paper by file_id
+        paper = get_object_or_404(ResearchPaper, file_id=file_id)
+        print(f"view_paper: Found paper with file_id {file_id}")
+
+        # Determine the user's role
+        user_role = request.user.role
+        print(f"view_paper: User role is {user_role}")
+
+        if user_role == 'guest':
+            print("view_paper: Guest user detected. Attempting to download file.")
+            file_content = download_from_google_drive(file_id)
+            if not file_content:
+                print("view_paper: Failed to download file.")
+                return JsonResponse({"error": "Failed to download file."}, status=500)
+
+            # Save the file temporarily
+            temp_pdf_path = os.path.join('temp', f"{paper.title}.pdf")
+            os.makedirs('temp', exist_ok=True)
+            with open(temp_pdf_path, 'wb') as temp_file:
+                temp_file.write(file_content)
+
+            try:
+                print("view_paper: Converting PDF to images using PyMuPDF.")
+                pdf_document = fitz_open(temp_pdf_path)
+                image_urls = []
+
+                for page_number in range(1, min(4, len(pdf_document) + 1)):
+                    page = pdf_document[page_number - 1]
+                    pix = page.get_pixmap()
+                    image_path = os.path.join('temp', f"{paper.title}_page_{page_number}.png")
+                    pix.save(image_path)
+                    image_urls.append(image_path)
+
+                pdf_document.close()
+
+                print("view_paper: Rendering preview HTML.")
+                html_content = render_to_string('preview.html', {'images': image_urls})
+                return HttpResponse(html_content)
+            finally:
+                print("view_paper: Cleaning up temporary files.")
+                os.remove(temp_pdf_path)
+                for image_path in image_urls:
+                    os.remove(image_path)
+
+        elif user_role in ['student', 'admin']:
+            print("view_paper: Redirecting student/admin to Google Drive view URL.")
+            view_url = paper.get_google_drive_view_url()
+            if not view_url:
+                print("view_paper: Google Drive view URL is None.")
+                return JsonResponse({"error": "Google Drive view URL not found."}, status=404)
+            return redirect(view_url)
+        else:
+            print("view_paper: Unauthorized role.")
+            return JsonResponse({"error": "Unauthorized role."}, status=403)
+
+    except Exception as e:
+        print(f"view_paper: An unexpected error occurred: {e}")
+        return JsonResponse({"error": "An unexpected error occurred.", "details": str(e)}, status=500)
+
+def download_paper(request, paper_id):
+    paper = get_object_or_404(ResearchPaper, id=paper_id)
+    if not paper.file_id:
+        return HttpResponse("File ID not found.", status=404)
+
+    file_content = download_from_google_drive(paper.file_id)
+    if not file_content:
+        return HttpResponse("Failed to download file.", status=500)
+
+    response = HttpResponse(file_content, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{paper.title}.pdf"'
+    return response
 
 # class CustomLoginView(LoginView):
 #     template_name = 'registration/login.html'

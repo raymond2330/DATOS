@@ -42,10 +42,14 @@ class ResearchPaper(models.Model):
     authors = models.ManyToManyField("Author", through="PaperAuthor")
     keywords = models.ManyToManyField("Keyword", through="PaperKeyword")
     access_setting = models.CharField(max_length=10, choices=ACCESS_CHOICES)
-    file_url = models.URLField()
     category = models.ForeignKey('Category', on_delete=models.CASCADE)
     uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
     file_id = models.CharField(max_length=255, blank=True, null=True)
+
+    def get_google_drive_view_url(self):
+        if self.file_id:
+            return f"https://drive.google.com/file/d/{self.file_id}/view"
+        return None
 
 class Dataset(models.Model):
     ACCESS_CHOICES = [
@@ -56,10 +60,14 @@ class Dataset(models.Model):
     description = models.TextField()
     version = models.CharField(max_length=50)
     size = models.DecimalField(max_digits=10, decimal_places=2)
-    file_url = models.URLField()
-    # preview_url = models.URLField()
     access_setting = models.CharField(max_length=10, choices=ACCESS_CHOICES)
     uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    file_id = models.CharField(max_length=255, blank=True, null=True)
+
+    def get_google_drive_view_url(self):
+        if self.file_id:
+            return f"https://drive.google.com/folders/{self.file_id}"
+        return None
 
 class Request(models.Model):
     STATUS_CHOICES = [
