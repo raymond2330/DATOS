@@ -11,7 +11,7 @@ BASE_URL = "http://localhost:8000"
 
 # User credentials
 login_data = {
-    "username": "guest@gmail.com",  # Use your registered email here
+    "username": "admin@gmail.com",  # Use your registered email here
     "password": "12345678" # Use your registered password here
 }
 
@@ -59,9 +59,8 @@ def test_upload_to_drive():
 
 # test_upload_to_drive()
 
-
 def test_view_paper():
-    print("Starting test_view_paper...")  # Debugging start point
+    print("Starting test_view_paper...")
 
     try:
         # Step 1: Get JWT token
@@ -97,7 +96,7 @@ def test_view_paper():
     except Exception as e:
         print("An error occurred:", str(e))
 
-test_view_paper()
+# test_view_paper()
 
 def test_request_access():
     print("Starting test_request_access...")
@@ -142,4 +141,46 @@ def test_request_access():
 
 # test_request_access()
 
+def test_update_request_permission():
+    print("Starting test_update_request_permission...")
+
+    try:
+        # Step 1: Get JWT token
+        login_url = f"{BASE_URL}/api/token/"
+        response = requests.post(login_url, json=login_data)
+
+        if response.status_code == 200:
+            tokens = response.json()
+            access_token = tokens["access"]
+            print("Admin login successful. Access token received.")
+
+            # Step 2: Update the status of a request
+            headers = {
+                "Authorization": f"Bearer {access_token}"
+            }
+            request_id = 13  # Replace with a valid request ID
+            update_url = f"{BASE_URL}/api/update-request-permission/{request_id}/"
+
+            update_data = {
+                "status": "approved"
+            }
+
+            update_response = requests.patch(update_url, json=update_data, headers=headers)
+            print(f"Update Request Permission Response: {update_response.status_code}")
+
+            if update_response.status_code == 200:
+                print("Request permission updated successfully.")
+                print("Response:", update_response.json())
+            else:
+                print("Error during request permission update. Status code:", update_response.status_code)
+                print("Response:", update_response.text)
+        else:
+            print("Admin login failed:", login_response.status_code)
+            print(login_response.text)
+
+    except Exception as e:
+        print("An error occurred:", str(e))
+
+# Call the test function
+test_update_request_permission()
 

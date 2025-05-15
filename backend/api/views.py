@@ -26,15 +26,15 @@ class IsStudent(BasePermission):
 
 class IsAdmin(BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role in ['admin']
+        return request.user.is_authenticated and request.user.role == 'admin'
 
-class UserCreateView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = CreateUserSerializer
-    permission_classes = [AllowAny]
+# class UserCreateView(generics.CreateAPIView):
+#     queryset = User.objects.all()
+#     serializer_class = CreateUserSerializer
+#     permission_classes = [AllowAny]
 
-    def perform_create(self, serializer):
-        serializer.save(password=serializer.validated_data['password'])
+#     def perform_create(self, serializer):
+#         serializer.save(password=serializer.validated_data['password'])
 
 class StudentCreateView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -338,4 +338,28 @@ def request_access(request):
 
     except Exception as e:
         print(f"request_access: An unexpected error occurred: {e}")
+        return JsonResponse({"error": "An unexpected error occurred.", "details": str(e)}, status=500)
+
+@api_view(['PATCH'])
+@permission_classes([IsAdmin])
+def update_request_permission(request, request_id):
+    print("update_request_permission: Start")
+    try:
+        # Fetch the request by ID
+        access_request = get_object_or_404(Request, id=request_id)
+
+        # Get the new status from the request data
+        new_status = request.data.get('status')
+        if new_status not in ['approved', 'rejected']:
+            return JsonResponse({"error": "Invalid status. Must be 'approved' or 'rejected'."}, status=400)
+
+        # Update the status of the request
+        access_request.status = new_status
+        access_request.save()
+
+        print(f"update_request_permission: Request {request_id} updated to {new_status}.")
+        return JsonResponse({"message": f"Request {request_id} updated successfully.", "status": new_status}, status=200)
+
+    except Exception as e:
+        print(f"update_request_permission: An unexpected error occurred: {e}")
         return JsonResponse({"error": "An unexpected error occurred.", "details": str(e)}, status=500)
