@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import StudentCreateView, GuestCreateView, AdminCreateView, upload_file_to_drive, view_paper, download_paper
+from .views import StudentCreateView, GuestCreateView, AdminCreateView, upload_file_to_drive, view_paper, download_paper, request_access
 
 urlpatterns = [
     path('register/student/', StudentCreateView.as_view(), name='register-student'),
@@ -8,4 +8,5 @@ urlpatterns = [
     path('upload-to-drive/', upload_file_to_drive, name='upload_to_drive'),
     path('view-paper/<str:file_id>/', view_paper, name='view_paper'),
     path('download-paper/<int:paper_id>/', download_paper, name='download_paper'),
+    path('request-access/', request_access, name='request_access'),
 ]

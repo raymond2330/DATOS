@@ -214,7 +214,7 @@ def upload_file_to_drive(request):
         # Clean up the temporary file
         os.remove(file_path)
 
-# TODO: Optimize the view_paper function by applying cache
+# TODO: Optimize the view_paper function by applying django's cache framework (In-memory, database, or file-based)
 @api_view(['GET'])
 @permission_classes([IsStudent | IsAdmin | IsGuest])
 def view_paper(request, file_id):
@@ -292,6 +292,38 @@ def download_paper(request, paper_id):
     response['Content-Disposition'] = f'attachment; filename="{paper.title}.pdf"'
     return response
 
-# class CustomLoginView(LoginView):
-#     template_name = 'registration/login.html'
-#     redirect_authenticated_user = True
+@api_view(['POST'])
+@permission_classes([IsGuest])
+def request_access(request):
+    print("request_access: Start")
+    try:
+        user = request.user
+        paper_id = request.data.get('paper_id')
+        purpose = request.data.get('purpose')
+        reason_for_access = request.data.get('reason_for_access')
+
+        if not paper_id or not purpose or not reason_for_access:
+            return JsonResponse({"error": "Missing required fields."}, status=400)
+
+        paper = get_object_or_404(ResearchPaper, id=paper_id)
+
+        # Check if a request already exists
+        existing_request = Request.objects.filter(user=user, paper=paper, status='pending').first()
+        if existing_request:
+            return JsonResponse({"error": "You already have a pending request for this paper."}, status=400)
+
+        # Create a new access request
+        access_request = Request.objects.create(
+            user=user,
+            paper=paper,
+            purpose=purpose,
+            reason_for_access=reason_for_access,
+            status='pending'
+        )
+
+        print("request_access: Access request created successfully.")
+        return JsonResponse({"message": "Access request submitted successfully.", "request_id": access_request.id}, status=201)
+
+    except Exception as e:
+        print(f"request_access: An unexpected error occurred: {e}")
+        return JsonResponse({"error": "An unexpected error occurred.", "details": str(e)}, status=500)

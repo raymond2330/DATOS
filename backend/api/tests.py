@@ -97,4 +97,49 @@ def test_view_paper():
     except Exception as e:
         print("An error occurred:", str(e))
 
-test_view_paper()
+# test_view_paper()
+
+def test_request_access():
+    print("Starting test_request_access...")
+
+    try:
+        # Step 1: Get JWT token
+        login_url = f"{BASE_URL}/api/token/"
+        response = requests.post(login_url, json=login_data)
+
+        if response.status_code == 200:
+            tokens = response.json()
+            access_token = tokens["access"]
+            print("Login successful. Access token received.")
+
+            # Step 2: Submit an access request
+            headers = {
+                "Authorization": f"Bearer {access_token}"
+            }
+            request_access_url = f"{BASE_URL}/api/request-access/"
+
+            request_data = {
+                "paper_id": 1,  # Replace with a valid paper ID
+                "purpose": "Research purposes",
+                "reason_for_access": "I need this paper for my thesis."
+            }
+
+            response = requests.post(request_access_url, headers=headers, json=request_data)
+            print(f"\nRequest Access Response: {response.status_code}")
+
+            if response.status_code == 201:
+                print("Access request submitted successfully.")
+                print("Response:", response.json())
+            else:
+                print("Error during access request. Status code:", response.status_code)
+                print("Response:", response.text)
+        else:
+            print("Login failed:", response.status_code)
+            print(response.text)
+
+    except Exception as e:
+        print("An error occurred:", str(e))
+
+test_request_access()
+
+
