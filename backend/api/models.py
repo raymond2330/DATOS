@@ -85,7 +85,7 @@ class Request(models.Model):
 
 class Author(models.Model):
     name = models.CharField(max_length=255)
-    affiliation = models.CharField(max_length=255)
+    # affiliation = models.CharField(max_length=255)
 
 class PaperAuthor(models.Model):
     paper = models.ForeignKey(ResearchPaper, on_delete=models.CASCADE)

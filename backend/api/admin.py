@@ -38,8 +38,8 @@ class RequestAdmin(admin.ModelAdmin):
     list_filter = ('status', 'request_date')
 
 class AuthorAdmin(admin.ModelAdmin):
-    list_display = ('name', 'affiliation')
-    search_fields = ('name', 'affiliation')
+    list_display = ('name',)
+    search_fields = ('name',)
 
 class KeywordAdmin(admin.ModelAdmin):
     list_display = ('term',)
@@ -57,6 +57,14 @@ class DatasetKeywordAdmin(admin.ModelAdmin):
     list_display = ('dataset', 'keyword')
     search_fields = ('dataset__title', 'keyword__term')
 
+class PaperAuthorAdmin(admin.ModelAdmin):
+    list_display = ('paper', 'author')
+    search_fields = ('paper__title', 'author__name')
+
+class PaperKeywordAdmin(admin.ModelAdmin):
+    list_display = ('paper', 'keyword')
+    search_fields = ('paper__title', 'keyword__term')
+
 try:
     admin.site.unregister(ResearchPaper)
 except admin.sites.NotRegistered:
@@ -72,3 +80,5 @@ admin.site.register(DatasetAuthor, DatasetAuthorAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(DatasetKeyword, DatasetKeywordAdmin)
 admin.site.register(PermissionChangeLog)
+admin.site.register(PaperAuthor, PaperAuthorAdmin)
+admin.site.register(PaperKeyword, PaperKeywordAdmin)

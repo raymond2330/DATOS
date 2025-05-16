@@ -36,7 +36,7 @@ def test_upload_to_drive():
             "file": ("Thesis 2_Chapter 1-5.pdf", open(r"C:\Users\Raymond\Desktop\DATOS\backend\Thesis 2_Chapter 1-5.pdf", "rb")),
             "file_type": (None, "research_paper"),
             "title": (None, "Thesis Chapter 1-5"),
-            "description": (None, "This is a test research paper")
+            "description": (None, "This is a test research paper"),
         }
 
         research_paper_response = requests.post(upload_url, headers=headers, files=research_paper_file)
@@ -57,7 +57,7 @@ def test_upload_to_drive():
         print("Login failed:", response.status_code)
         print(response.text)
 
-# test_upload_to_drive()
+test_upload_to_drive()
 
 def test_view_paper():
     print("Starting test_view_paper...")
@@ -118,7 +118,8 @@ def test_request_access():
             request_access_url = f"{BASE_URL}/api/request-access/"
 
             request_data = {
-                "paper_id": 32,  # Replace with a valid paper ID
+                "paper_id": 32,
+                # "dataset_id": 1,
                 "purpose": "Research purposes",
                 "reason_for_access": "I need this paper for my thesis."
             }
@@ -158,7 +159,7 @@ def test_update_request_permission():
             headers = {
                 "Authorization": f"Bearer {access_token}"
             }
-            request_id = 13  # Replace with a valid request ID
+            request_id = 14  # Replace with a valid request ID
             update_url = f"{BASE_URL}/api/update-request-permission/{request_id}/"
 
             update_data = {
@@ -181,6 +182,4 @@ def test_update_request_permission():
     except Exception as e:
         print("An error occurred:", str(e))
 
-# Call the test function
-test_update_request_permission()
-
+# test_update_request_permission()
